@@ -223,7 +223,7 @@ function updateRemedies() {
         const remedyDiv = document.createElement("div");
         remedyDiv.className = "remedy-item";
         remedyDiv.innerHTML = `<strong>${
-          symptom.charAt(0).toUpperCase() + symptom.slice(1)
+        " " 
         }:</strong> ${remedy}`;
         remediesList.appendChild(remedyDiv);
       });
