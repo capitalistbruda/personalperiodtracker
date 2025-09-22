@@ -36,17 +36,37 @@ const remedies = {
     "Sleep with a pillow between your knees",
     "Consider a warm shower or bath",
   ],
-  vaginaldryness: [
-    "Use a water-based lubricant during intimacy",
-    "Stay hydrated by drinking plenty of water",
-    "Avoid harsh soaps or douches in the vaginal area",
-    "Consider using a vaginal moisturizer",
+  nausea: [
+    "Sip on ginger tea or chew ginger candies",
+    "Eat small, frequent meals",
+  ],
+  acne: [
+    "Maintain a gentle skincare routine",
+    "Avoid touching your face frequently",
   ],
   insomnia: [
-    "Establish a regular sleep schedule",
+    "Establish a calming bedtime routine",
     "Avoid screens at least an hour before bed",
-    "Practice relaxation techniques like meditation",
-    "Limit caffeine and heavy meals in the evening",
+    "Try relaxation techniques like meditation",
+    "Keep your bedroom cool and dark",
+  ],
+  breastTenderness: [
+    "Wear a supportive bra",
+    "Apply warm or cold compresses",
+    "Reduce caffeine intake",
+    "Take over-the-counter pain relief if needed",
+  ],
+  foodCravings: [
+    "Opt for healthy snacks like fruits or nuts",
+    "Stay hydrated - sometimes thirst is mistaken for hunger",
+    "Distract yourself with a hobby or activity",
+    "Practice mindful eating",
+  ],
+  dizziness: [
+    "Sit or lie down immediately if you feel dizzy",
+    "Avoid sudden movements",
+    "Stay hydrated",
+    "Eat small, frequent meals to maintain blood sugar levels",
   ],
 };
 
@@ -101,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
   generateSampleCycleData(); // Add sample data if no history exists
   updateCycleHistory();
   drawCycleGraph();
+  loadVoiceNotes(); // Load voice notes automatically
 });
 
 function loadUserData() {
@@ -178,29 +199,33 @@ function updateWaterDisplay() {
 }
 
 function toggleSymptom(symptom) {
-  const btn = event.target;
-  const today = new Date().toISOString().split("T")[0];
-
-  if (!userData.dailyEntries[today]) {
-    userData.dailyEntries[today] = { symptoms: [] };
-  }
-  if (!userData.dailyEntries[today].symptoms) {
-    userData.dailyEntries[today].symptoms = [];
-  }
-
-  const symptoms = userData.dailyEntries[today].symptoms;
-  const index = symptoms.indexOf(symptom);
-
-  if (index > -1) {
-    symptoms.splice(index, 1);
-    btn.classList.remove("selected");
-  } else {
-    symptoms.push(symptom);
-    btn.classList.add("selected");
-  }
-
-  updateRemedies();
-  saveUserData();
+    const btn = event.target;
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (!userData.dailyEntries[today]) {
+        userData.dailyEntries[today] = { symptoms: [] };
+    }
+    if (!userData.dailyEntries[today].symptoms) {
+        userData.dailyEntries[today].symptoms = [];
+    }
+    
+    const symptoms = userData.dailyEntries[today].symptoms;
+    const index = symptoms.indexOf(symptom);
+    
+    // Clear all previously selected symptoms and their buttons
+    symptoms.length = 0; // Clear the array
+    document.querySelectorAll('.symptom-btn').forEach(button => {
+        button.classList.remove('selected');
+    });
+    
+    // Add only the newly selected symptom
+    if (index === -1) { // Only add if it wasn't already selected
+        symptoms.push(symptom);
+        btn.classList.add('selected');
+    }
+    
+    updateRemedies();
+    saveUserData();
 }
 
 function updateRemedies() {
@@ -222,9 +247,7 @@ function updateRemedies() {
       remedies[symptom].forEach((remedy) => {
         const remedyDiv = document.createElement("div");
         remedyDiv.className = "remedy-item";
-        remedyDiv.innerHTML = `<strong>${
-        " " 
-        }:</strong> ${remedy}`;
+        remedyDiv.innerHTML = `<strong></strong> ${remedy}`;
         remediesList.appendChild(remedyDiv);
       });
     }
@@ -711,7 +734,163 @@ function deletePeriod(index) {
   }
 }
 
+// Voice Notes Functions
+function loadVoiceNotes() {
+  const audioContainer = document.getElementById("audioContainer");
+  const voiceNotesList = document.getElementById("voiceNotesList");
+
+  // Find all audio elements in the hidden container
+  const audioElements = audioContainer.querySelectorAll("audio");
+
+  // Clear existing list
+  voiceNotesList.innerHTML = "";
+
+  if (audioElements.length === 0) {
+    voiceNotesList.innerHTML = `
+                    <div style="text-align: center; color: #666; padding: 40px;">
+                        <h4>No voice notes yet</h4>
+                        <p>Add audio tags in the HTML to see them here!</p>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; text-align: left;">
+                            <strong>How to add voice notes:</strong><br>
+                            Add audio tags in the audioContainer div like this:<br>
+                            <code style="background: white; padding: 5px; border-radius: 3px;">
+                                &lt;audio data-date="2025-01-20" data-title="My note"&gt;<br>
+                                &nbsp;&nbsp;&lt;source src="path/to/audio.mp3" type="audio/mpeg"&gt;<br>
+                                &lt;/audio&gt;
+                            </code>
+                        </div>
+                    </div>
+                `;
+    return;
+  }
+
+  // Convert NodeList to Array and sort by date (newest first)
+  const audioArray = Array.from(audioElements).sort((a, b) => {
+    const dateA = a.getAttribute("data-date") || "1970-01-01";
+    const dateB = b.getAttribute("data-date") || "1970-01-01";
+    return new Date(dateB) - new Date(dateA);
+  });
+
+  // Create UI for each audio file
+  audioArray.forEach((audio, index) => {
+    const voiceNoteDiv = createVoiceNoteUI(audio, index);
+    voiceNotesList.appendChild(voiceNoteDiv);
+  });
+}
+
+function createVoiceNoteUI(audioElement, index) {
+  const date = audioElement.getAttribute("data-date") || "Unknown date";
+  const title =
+    audioElement.getAttribute("data-title") || `Voice Note ${index + 1}`;
+  const src = audioElement.querySelector("source")?.src || audioElement.src;
+
+  const voiceNoteDiv = document.createElement("div");
+  voiceNoteDiv.className = "voice-note-item";
+
+  // Create formatted date
+  const formattedDate =
+    date !== "Unknown date"
+      ? new Date(date).toLocaleDateString("en-US", {
+          weekday: "short",
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : date;
+
+  voiceNoteDiv.innerHTML = `
+                <div class="voice-note-header">
+                    <div>
+                        <strong>${title}</strong>
+                        <div class="voice-note-date">${formattedDate}</div>
+                    </div>
+                    <div class="voice-note-duration" id="duration-${index}">
+                        Loading...
+                    </div>
+                </div>
+                <audio class="custom-audio-player" controls preload="metadata" id="audio-${index}">
+                    <source src="${src}" type="${
+    audioElement.querySelector("source")?.type || "audio/mpeg"
+  }">
+                    Your browser does not support the audio element.
+                </audio>
+                <div class="voice-controls">
+                    <button class="play-btn" onclick="playPauseAudio(${index})">
+                        <span id="play-text-${index}">▶ Play</span>
+                    </button>
+                    <button class="delete-voice-btn" onclick="removeVoiceNote(${index})">
+                        🗑 Delete
+                    </button>
+                </div>
+            `;
+
+  // Set up audio event listeners after adding to DOM
+  setTimeout(() => {
+    const audio = document.getElementById(`audio-${index}`);
+    const durationSpan = document.getElementById(`duration-${index}`);
+
+    audio.addEventListener("loadedmetadata", () => {
+      const duration = audio.duration;
+      if (duration && !isNaN(duration)) {
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        durationSpan.textContent = `${minutes}:${seconds
+          .toString()
+          .padStart(2, "0")}`;
+      } else {
+        durationSpan.textContent = "Unknown";
+      }
+    });
+
+    audio.addEventListener("play", () => {
+      document.getElementById(`play-text-${index}`).textContent = "⏸ Pause";
+    });
+
+    audio.addEventListener("pause", () => {
+      document.getElementById(`play-text-${index}`).textContent = "▶ Play";
+    });
+
+    audio.addEventListener("ended", () => {
+      document.getElementById(`play-text-${index}`).textContent = "▶ Play";
+    });
+  }, 100);
+
+  return voiceNoteDiv;
+}
+
+function playPauseAudio(index) {
+  const audio = document.getElementById(`audio-${index}`);
+  const playText = document.getElementById(`play-text-${index}`);
+
+  if (audio.paused) {
+    // Pause all other audio elements first
+    document.querySelectorAll("audio").forEach((a) => {
+      if (a !== audio && !a.paused) {
+        a.pause();
+      }
+    });
+    audio.play();
+  } else {
+    audio.pause();
+  }
+}
+
+function removeVoiceNote(index) {
+  if (
+    confirm("Are you sure you want to remove this voice note from the display?")
+  ) {
+    const audioContainer = document.getElementById("audioContainer");
+    const audioElements = audioContainer.querySelectorAll("audio");
+
+    if (audioElements[index]) {
+      audioElements[index].remove();
+      loadVoiceNotes(); // Refresh the list
+    }
+  }
+}
+
 function deleteCycle(index) {
   // This function is no longer needed since we're managing periods directly
   deletePeriod(index);
 }
+
