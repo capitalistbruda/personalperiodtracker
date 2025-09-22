@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Period Tracker</title>
     <link rel="stylesheet" href="style.css?v=1.0">
 </head>
+
 <body>
     <div class="container">
         <div class="header">
-            <h1>🌸 Pragya's Period Tracker</h1>
+            <h1>🌸 Period Tracker</h1>
             <div class="cycle-info">
                 <div class="days-left">
                     <div class="days-number" id="daysLeft">5</div>
@@ -26,6 +28,7 @@
             <button class="tab active" onclick="switchTab('today')">Today</button>
             <button class="tab" onclick="switchTab('insights')">Insights</button>
             <button class="tab" onclick="switchTab('history')">History</button>
+            <button class="tab" onclick="switchTab('voice')">Voice</button>
             <button class="tab" onclick="switchTab('settings')">Settings</button>
         </div>
 
@@ -58,8 +61,12 @@
                     <button class="symptom-btn" onclick="toggleSymptom('mood')">Mood Swings</button>
                     <button class="symptom-btn" onclick="toggleSymptom('fatigue')">Fatigue</button>
                     <button class="symptom-btn" onclick="toggleSymptom('backache')">Back Pain</button>
-                    <button class="symptom-btn" onclick="toggleSymptom('vaginaldryness')">Vaginal Dryness</button>
+                    <button class="symptom-btn" onclick="toggleSymptom('nausea')">Nausea</button>
+                    <button class="symptom-btn" onclick="toggleSymptom('acne')">Acne</button>
                     <button class="symptom-btn" onclick="toggleSymptom('insomnia')">Insomnia</button>
+                    <button class="symptom-btn" onclick="toggleSymptom('breastTenderness')">Breast Tenderness</button>
+                    <button class="symptom-btn" onclick="toggleSymptom('foodCravings')">Food Cravings</button>
+                    <button class="symptom-btn" onclick="toggleSymptom('dizziness')">Dizziness</button>
                 </div>
                 <div class="remedies" id="remediesSection" style="display: none;">
                     <h4>💡 Instant Remedies</h4>
@@ -76,7 +83,8 @@
 
             <div class="insights-section">
                 <div class="insight-text" id="todayInsight">
-                    Based on your cycle, you might experience some mood changes today. Stay hydrated and consider light exercise.
+                    Based on your cycle, you might experience some mood changes today. Stay hydrated and consider light
+                    exercise.
                 </div>
                 <button class="edit-insight-btn" onclick="editInsight()">Edit Today's Insight</button>
             </div>
@@ -91,7 +99,7 @@
 
         <div id="history" class="tab-content">
             <button class="add-cycle-btn" onclick="openAddCycleModal()">+ Add Period Entry</button>
-            
+
             <div class="section cycle-graph">
                 <h3>📊 Cycle Length Graph</h3>
                 <div class="graph-container" id="cycleGraph">
@@ -111,7 +119,7 @@
                 <div class="graph-labels" id="graphLabels">
                     <!-- Month labels will be generated here -->
                 </div>
-                
+
                 <div class="cycle-legend">
                     <div class="legend-item">
                         <div class="legend-dot normal" style="background: #4ecdc4;"></div>
@@ -126,13 +134,14 @@
                         <span>Long (≥36 days)</span>
                     </div>
                 </div>
-                
+
                 <div class="cycle-notes">
                     <h4>📝 Cycle Length Guide</h4>
                     <ul>
                         <li><strong>Normal:</strong> 21-35 days - This is considered a healthy cycle range</li>
                         <li><strong>Short:</strong> Less than 21 days - May indicate hormonal imbalances</li>
-                        <li><strong>Long:</strong> More than 35 days - Could be due to stress, PCOS, or other factors</li>
+                        <li><strong>Long:</strong> More than 35 days - Could be due to stress, PCOS, or other factors
+                        </li>
                         <li><strong>Very Long:</strong> Over 45 days - Consider consulting a healthcare provider</li>
                         <li><strong>Very Short:</strong> Under 20 days - Worth discussing with a doctor</li>
                     </ul>
@@ -147,15 +156,47 @@
             </div>
         </div>
 
+        <div id="voice" class="tab-content">
+            <div class="voice-notes-container">
+                <h2>🎤 Voice Notes</h2>
+                <p>Your personal audio diary</p>
+            </div>
+
+            <!-- Hidden container for audio files - ADD YOUR AUDIO TAGS HERE -->
+            <div id="audioContainer" class="hidden-audio-container">
+                <!-- Example: Add your audio files like this -->
+                <!-- <audio data-date="2025-01-20" data-title="Morning thoughts">
+                    <source src="voice-notes/morning-jan20.mp3" type="audio/mpeg">
+                    <source src="voice-notes/morning-jan20.wav" type="audio/wav">
+                </audio> -->
+                <!-- <audio data-date="2025-01-19" data-title="Evening reflection">
+                    <source src="voice-notes/evening-jan19.mp3" type="audio/mpeg">
+                </audio> -->
+                
+                <audio data-date="2025-01-17" data-title="Voice note 2">
+                    <source src="No Copyright Background Music - Blockbuster Trailer for trailer movies.mp3" type="audio/mpeg">
+                <audio data-date="2025-01-18" data-title="Voice note 1 ">
+                    <source src="ElevenLabs_Text_to_Speech_audiov1.mp3" type="audio/mpeg">
+                </audio>    
+            </div>
+
+            <div class="section">
+                <h3>📱 Your Voice Notes</h3>
+                <div class="voice-notes-list" id="voiceNotesList">
+                   
+                </div>
+            </div>
+        </div>
+
         <div id="settings" class="tab-content">
             <div class="section">
                 <h3>⚙️ Cycle Settings</h3>
                 <label for="lastPeriod">Last Period Start Date:</label>
                 <input type="date" id="lastPeriod" class="date-input">
-                
+
                 <label for="cycleLength">Average Cycle Length (days):</label>
                 <input type="number" id="cycleLength" class="date-input" value="28" min="20" max="40">
-                
+
                 <button class="save-btn" onclick="saveSettings()">Save Settings</button>
             </div>
 
@@ -174,19 +215,20 @@
             <h3>Add Period Entry</h3>
             <label for="cycleStartDate">Period Start Date:</label>
             <input type="date" id="cycleStartDate" class="date-input">
-            
+
             <label for="cycleEndDate">Period End Date:</label>
             <input type="date" id="cycleEndDate" class="date-input">
-            
+
             <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
-                💡 Enter when your period started and ended. The app will automatically calculate cycle lengths when you add future periods.
+                💡 Enter when your period started and ended. The app will automatically calculate cycle lengths when you
+                add future periods.
             </p>
-            
+
             <button class="save-btn" onclick="addNewCycle()">Add Period</button>
         </div>
     </div>
 
     <script src="scripts.js?v=1.0"></script>
 </body>
-</html>
 
+</html>
